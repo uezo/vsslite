@@ -59,7 +59,7 @@ class VSSLite:
         )
         return response["data"][0]["embedding"]
     
-    def add(self, body: str, data: dict=None, namespace: str="default"):
+    def add(self, body: str, data: dict=None, namespace: str="default") -> int:
         now = datetime.utcnow()
         embedding = self.create_embedding(body)
 
@@ -79,6 +79,8 @@ class VSSLite:
             )
             
             conn.commit()
+
+            return last_id
         
         except Exception as ex:
             logger.error(f"Error at VSSEngine.add: {str(ex)}\n{traceback.format_exc()}")
@@ -88,7 +90,7 @@ class VSSLite:
         finally:
             conn.close()
     
-    def update(self, id: int, body: str, data: dict=None):
+    def update(self, id: int, body: str, data: dict=None) -> int:
         now = datetime.utcnow()
         embedding = self.create_embedding(body)
 
@@ -114,6 +116,8 @@ class VSSLite:
             )
 
             conn.commit()
+
+            return last_id
         
         except Exception as ex:
             logger.error(f"Error at VSSEngine.update: {str(ex)}\n{traceback.format_exc()}")

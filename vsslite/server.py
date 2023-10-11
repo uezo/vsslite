@@ -15,7 +15,15 @@ class AddRequest(BaseModel):
     data: Optional[dict] = Field(None, title="data", description="Knowlegde data as JSON", example={"body": "Eels and conger eels are both long, thin fish, but the difference is that eels are freshwater fish and conger eels are saltwater fish.", "url": "https://~~~~"})
 
 
+class AddResponse(BaseModel):
+    id: int = Field(..., title="id", description="Record id", example=3)
+
+
 class UpdateReqeust(AddRequest):
+    pass
+
+
+class UpdateResponse(AddResponse):
     pass
 
 
@@ -78,25 +86,25 @@ class VSSLiteServer:
                 logger.error(f"Error at vssengine.search_knowledge: {ex}\n{traceback.format_exc()}")
                 return JSONResponse({"error": "Internal server error"}, 500)
 
-        @app.post("/knowledge/{namespace}", response_model=ApiResponse, tags=["Data management"])
+        @app.post("/knowledge/{namespace}", response_model=AddResponse, tags=["Data management"])
         async def add_knowledge(namespace: str, request: AddRequest):
             try:
-                self.vssengine.add(request.body, request.data, namespace)
-                return ApiResponse(message="Histories added successfully")
+                id = self.vssengine.add(request.body, request.data, namespace)
+                return AddResponse(id=id)
             
             except Exception as ex:
                 logger.error(f"Error at vssengine.add: {ex}\n{traceback.format_exc()}")
                 return JSONResponse({"error": "Internal server error"}, 500)
 
-        @app.patch("/knowledge/{id}", response_model=ApiResponse, tags=["Data management"])
+        @app.patch("/knowledge/{id}", response_model=UpdateResponse, tags=["Data management"])
         async def update_knowledge(id: int, request: UpdateReqeust):
             try:
                 r = self.vssengine.get(id)
                 if not r:
                     return JSONResponse({"error": f"Id={id} not found"}, 404)
                 
-                self.vssengine.update(id, request.body, request.data)
-                return ApiResponse(message="Success")
+                new_id = self.vssengine.update(id, request.body, request.data)
+                return UpdateResponse(id=new_id)
             
             except Exception as ex:
                 logger.error(f"Error at vssengine.update: {ex}\n{traceback.format_exc()}")

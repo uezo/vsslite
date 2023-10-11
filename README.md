@@ -64,9 +64,32 @@ uvicorn.run(app, host="127.0.0.1", port=8000)
 Go http://127.0.0.1:8000/docs to know the details and try it out.
 
 
+# 🚀 Quick start
+
+Copy [Dockerfile](https://github.com/uezo/vsslite/blob/main/Dockerfile) to your current directory and set your OpenAI API key.
+
+```Dockerfile
+ENV API_KEY YOUR_API_KEY
+```
+
+Build container.
+
+```sh
+$ docker build -t vsslite .
+```
+
+Run container. This example saves SQLite data to `/path/to/datadir` and listen port 8001 for API.
+
+```sh
+$ docker run --name vsslite --mount 'type=bind,source=/path/to/datadir,target=/data' -d -p 8001:8000 vsslite:latest
+```
+
+Your VSSLite REST APIs are ready at http://localhost:8001/docs . Enjoy🥳
+
+
 # 🙏 Pre-Requirements
 
-Python environment that allows you to use SQLite extentions is required. Use the build option below when you install Python:
+If you install VSSLite on your host machine without docker, Python environment that allows you to use SQLite extentions is required. Use the build option below when you install Python:
 
 ```bash
 $ export PYTHON_CONFIGURE_OPTS="--enable-loadable-sqlite-extensions"

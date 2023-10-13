@@ -259,16 +259,16 @@ class VSSLite:
                 reader = csv.DictReader(csv_lines)
                 return [dict(r) for r in reader]
 
-    async def aimport_file(self, path: str, body_key: str, namespace: str="default"):
+    async def aimport_file(self, path: str, body_key: str="body", namespace: str="default"):
         records = await self.aload_records_as_json(path)
 
         ret = {"ids": [], "errors": []}
         for r in records:
             try:
                 if "id" in r:
-                    ret["ids"].append(self.update(r["id"], r[body_key], r))
+                    ret["ids"].append(await self.aupdate(r["id"], r[body_key], r))
                 else:
-                    ret["ids"].append(self.add(r[body_key], r, namespace))
+                    ret["ids"].append(await self.aadd(r[body_key], r, namespace))
             except Exception as ex:
                 ret["errors"].append({"message": str(ex), "record": r})
 

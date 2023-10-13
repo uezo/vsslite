@@ -60,6 +60,66 @@ async def test_acurd():
     assert await vss.aget(id6) is None
 
 
+@pytest.mark.asyncio
+async def test_abulk_json():
+    vss = VSSLite(API_KEY, "tests/data/vsstest_bulk_json_async.db")
+    await vss.adelete_all()
+
+    # import for add
+    r1 = await vss.aimport_file("tests/data/sample.json")
+    assert r1["ids"] == [1, 2, 3]
+
+    # search
+    s1 = await vss.asearch("fish")
+    assert s1[0]["body"] == "The difference between eel and conger eel is that eel is more expensive."
+    s2 = await vss.asearch("animal")
+    assert s2[0]["body"] == "Red pandas are smaller than pandas, but when it comes to cuteness, there is no \"lesser\" about them."
+    s3 = await vss.asearch("food")
+    assert s3[0]["body"] == "There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season."
+
+    # import for update
+    r2 = await vss.aimport_file("tests/data/sample_up.json")
+    assert r2["ids"] == [4, 5, 6]
+
+    # search
+    s4 = await vss.asearch("fish")
+    assert s4[0]["body"] == "up:The difference between eel and conger eel is that eel is more expensive."
+    s5 = await vss.asearch("animal")
+    assert s5[0]["body"] == "up:Red pandas are smaller than pandas, but when it comes to cuteness, there is no \"lesser\" about them."
+    s6 = await vss.asearch("food")
+    assert s6[0]["body"] == "up:There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season."
+
+
+@pytest.mark.asyncio
+async def test_abulk_csv():
+    vss = VSSLite(API_KEY, "tests/data/vsstest_bulk_csv_async.db")
+    await vss.adelete_all()
+
+    # import for add
+    r1 = await vss.aimport_file("tests/data/sample.csv")
+    assert r1["ids"] == [1, 2, 3]
+
+    # search
+    s1 = await vss.asearch("fish")
+    assert s1[0]["body"] == "The difference between eel and conger eel is that eel is more expensive."
+    s2 = await vss.asearch("animal")
+    assert s2[0]["body"] == "Red pandas are smaller than pandas, but when it comes to cuteness, there is no \"lesser\" about them."
+    s3 = await vss.asearch("food")
+    assert s3[0]["body"] == "There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season."
+
+    # import for update
+    r2 = await vss.aimport_file("tests/data/sample_up.csv")
+    assert r2["ids"] == [4, 5, 6]
+
+    # search
+    s4 = await vss.asearch("fish")
+    assert s4[0]["body"] == "up:The difference between eel and conger eel is that eel is more expensive."
+    s5 = await vss.asearch("animal")
+    assert s5[0]["body"] == "up:Red pandas are smaller than pandas, but when it comes to cuteness, there is no \"lesser\" about them."
+    s6 = await vss.asearch("food")
+    assert s6[0]["body"] == "up:There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season."
+
+
 def test_curd():
     vss = VSSLite(API_KEY, "vsstest_sync.db")
     vss.delete_all()
@@ -113,3 +173,61 @@ def test_curd():
     assert vss.get(id4) is None
     assert vss.get(id5) is None
     assert vss.get(id6) is None
+
+
+def test_bulk_json():
+    vss = VSSLite(API_KEY, "tests/data/vsstest_bulk_json.db")
+    vss.delete_all()
+
+    # import for add
+    r1 = vss.import_file("tests/data/sample.json")
+    assert r1["ids"] == [1, 2, 3]
+
+    # search
+    s1 = vss.search("fish")
+    assert s1[0]["body"] == "The difference between eel and conger eel is that eel is more expensive."
+    s2 = vss.search("animal")
+    assert s2[0]["body"] == "Red pandas are smaller than pandas, but when it comes to cuteness, there is no \"lesser\" about them."
+    s3 = vss.search("food")
+    assert s3[0]["body"] == "There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season."
+
+    # import for update
+    r2 = vss.import_file("tests/data/sample_up.json")
+    assert r2["ids"] == [4, 5, 6]
+
+    # search
+    s4 = vss.search("fish")
+    assert s4[0]["body"] == "up:The difference between eel and conger eel is that eel is more expensive."
+    s5 = vss.search("animal")
+    assert s5[0]["body"] == "up:Red pandas are smaller than pandas, but when it comes to cuteness, there is no \"lesser\" about them."
+    s6 = vss.search("food")
+    assert s6[0]["body"] == "up:There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season."
+
+
+def test_bulk_csv():
+    vss = VSSLite(API_KEY, "tests/data/vsstest_abulk_csv.db")
+    vss.delete_all()
+
+    # import for add
+    r1 = vss.import_file("tests/data/sample.csv")
+    assert r1["ids"] == [1, 2, 3]
+
+    # search
+    s1 = vss.search("fish")
+    assert s1[0]["body"] == "The difference between eel and conger eel is that eel is more expensive."
+    s2 = vss.search("animal")
+    assert s2[0]["body"] == "Red pandas are smaller than pandas, but when it comes to cuteness, there is no \"lesser\" about them."
+    s3 = vss.search("food")
+    assert s3[0]["body"] == "There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season."
+
+    # import for update
+    r2 = vss.import_file("tests/data/sample_up.csv")
+    assert r2["ids"] == [4, 5, 6]
+
+    # search
+    s4 = vss.search("fish")
+    assert s4[0]["body"] == "up:The difference between eel and conger eel is that eel is more expensive."
+    s5 = vss.search("animal")
+    assert s5[0]["body"] == "up:Red pandas are smaller than pandas, but when it comes to cuteness, there is no \"lesser\" about them."
+    s6 = vss.search("food")
+    assert s6[0]["body"] == "up:There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season."

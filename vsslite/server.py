@@ -69,7 +69,7 @@ class VSSLiteServer:
         async def search_knowledge(q: str, namespace: str, count: int=1):
             try:
                 results = []
-                for r in self.vssengine.search(q, count, namespace):
+                for r in await self.vssengine.asearch(q, count, namespace):
                     results.append(
                         SearchResult(
                             id=r["id"],
@@ -89,7 +89,7 @@ class VSSLiteServer:
         @app.post("/knowledge/{namespace}", response_model=AddResponse, tags=["Data management"])
         async def add_knowledge(namespace: str, request: AddRequest):
             try:
-                id = self.vssengine.add(request.body, request.data, namespace)
+                id = await self.vssengine.aadd(request.body, request.data, namespace)
                 return AddResponse(id=id)
             
             except Exception as ex:
@@ -99,11 +99,11 @@ class VSSLiteServer:
         @app.patch("/knowledge/{id}", response_model=UpdateResponse, tags=["Data management"])
         async def update_knowledge(id: int, request: UpdateReqeust):
             try:
-                r = self.vssengine.get(id)
+                r = await self.vssengine.aget(id)
                 if not r:
                     return JSONResponse({"error": f"Id={id} not found"}, 404)
                 
-                new_id = self.vssengine.update(id, request.body, request.data)
+                new_id = await self.vssengine.aupdate(id, request.body, request.data)
                 return UpdateResponse(id=new_id)
             
             except Exception as ex:
@@ -113,9 +113,9 @@ class VSSLiteServer:
         @app.delete("/knowledge/all", response_model=ApiResponse, tags=["Data management"])
         async def delete_all_knowledge():
             try:
-                self.vssengine.delete_all()
+                await self.vssengine.adelete_all()
                 return ApiResponse(message="Success")
-            
+
             except Exception as ex:
                 logger.error(f"Error at vssengine.delete_all: {ex}\n{traceback.format_exc()}")
                 return JSONResponse({"error": "Internal server error"}, 500)
@@ -123,7 +123,7 @@ class VSSLiteServer:
         @app.delete("/knowledge/{id}", response_model=ApiResponse, tags=["Data management"])
         async def delete_knowledge(id: int):
             try:
-                self.vssengine.delete(id)
+                await self.vssengine.adelete(id)
                 return ApiResponse(message="Success")
             
             except Exception as ex:
@@ -133,7 +133,7 @@ class VSSLiteServer:
         @app.get("/knowledge/{id}", response_model=GetResponse, tags=["Data management"])
         async def get_knowledge(id: int):
             try:
-                r = self.vssengine.get(id)
+                r = await self.vssengine.aget(id)
                 if not r:
                     return JSONResponse({"error": f"Id={id} not found"}, 404)
 

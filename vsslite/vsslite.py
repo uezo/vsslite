@@ -1,3 +1,6 @@
+import asyncio
+import aiofiles
+import csv
 from datetime import datetime
 import json
 from logging import getLogger, NullHandler
@@ -17,6 +20,9 @@ class VSSLite:
         self.openai_apikey = openai_apikey
         self.connection_str = connection_str
         self.create_tables()
+
+    def sync(self, future):
+        return asyncio.get_event_loop().run_until_complete(future)
 
     def get_connection(self) -> sqlite3.Connection:
         conn = sqlite3.connect(
@@ -253,3 +259,31 @@ class VSSLite:
     async def asearch(self, query: str, count: int=1, namespace: str="default") -> List[dict]:
         embedding = await self.acreate_embedding(query)
         return self.search(query, count, namespace, embedding)
+
+    async def aload_records_as_json(self, path) -> List[dict]:
+        async with aiofiles.open(path, mode="r", newline="") as file:
+            content = await file.read()
+            try:
+                return json.loads(content)["records"]
+            except Exception as ex:
+                csv_lines = content.split("\n")
+                reader = csv.DictReader(csv_lines)
+                return [dict(r) for r in reader]
+
+    async def aimport_file(self, path: str, body_key: str, namespace: str="default"):
+        records = await self.aload_records_as_json(path)
+
+        ret = {"ids": [], "errors": []}
+        for r in records:
+            try:
+                if "id" in r:
+                    ret["ids"].append(self.update(r["id"], r[body_key], r))
+                else:
+                    ret["ids"].append(self.add(r[body_key], r, namespace))
+            except Exception as ex:
+                ret["errors"].append({"message": str(ex), "record": r})
+
+        return ret
+
+    def import_file(self, path: str, body_key: str="body", namespace: str="default"):
+        return self.sync(self.aimport_file(path, body_key, namespace))

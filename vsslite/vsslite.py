@@ -59,9 +59,17 @@ class VSSLite:
         )
         return response["data"][0]["embedding"]
     
-    def add(self, body: str, data: dict=None, namespace: str="default") -> int:
+    async def acreate_embedding(self, text: str) -> List[float]:
+        response = await Embedding.acreate(
+            api_key = self.openai_apikey,
+            engine="text-embedding-ada-002",
+            input=[text]
+        )
+        return response["data"][0]["embedding"]
+
+    def add(self, body: str, data: dict=None, namespace: str="default", _embedding: List[float]=None) -> int:
         now = datetime.utcnow()
-        embedding = self.create_embedding(body)
+        embedding = _embedding or self.create_embedding(body)
 
         conn = self.get_connection()
 
@@ -90,9 +98,13 @@ class VSSLite:
         finally:
             conn.close()
     
-    def update(self, id: int, body: str, data: dict=None) -> int:
+    async def aadd(self, body: str, data: dict=None, namespace: str="default") -> int:
+        embedding = await self.acreate_embedding(body)
+        return self.add(body, data, namespace, embedding)
+
+    def update(self, id: int, body: str, data: dict=None, _embedding: List[float]=None) -> int:
         now = datetime.utcnow()
-        embedding = self.create_embedding(body)
+        embedding = _embedding or self.create_embedding(body)
 
         conn = self.get_connection()
 
@@ -127,6 +139,10 @@ class VSSLite:
         finally:
             conn.close()
 
+    async def aupdate(self, id: int, body: str, data: dict=None) -> int:
+        embedding = await self.acreate_embedding(body)
+        return self.add(id, body, data, embedding)
+
     def delete(self, id: int):
         conn = self.get_connection()
 
@@ -143,6 +159,9 @@ class VSSLite:
         finally:
             conn.close()
 
+    async def adelete(self, id: int):
+        self.delete(id)
+
     def delete_all(self):
         conn = self.get_connection()
 
@@ -158,6 +177,9 @@ class VSSLite:
 
         finally:
             conn.close()
+
+    async def adelete_all(self):
+        self.adelete_all()
 
     def get(self, id: int) -> dict:
         conn = self.get_connection()
@@ -189,8 +211,11 @@ class VSSLite:
         finally:
             conn.close()
 
-    def search(self, query: str, count: int=1, namespace: str="default") -> List[dict]:
-        query_embedding = self.create_embedding(query)
+    async def aget(self, id: int) -> dict:
+        return self.get(id)
+
+    def search(self, query: str, count: int=1, namespace: str="default", _embedding: List[float]=None) -> List[dict]:
+        query_embedding = _embedding or self.create_embedding(query)
 
         conn = self.get_connection()
 
@@ -224,3 +249,7 @@ class VSSLite:
         
         finally:
             conn.close()
+
+    async def asearch(self, query: str, count: int=1, namespace: str="default") -> List[dict]:
+        embedding = await self.acreate_embedding(query)
+        return self.search(query, count, namespace, embedding)

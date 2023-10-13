@@ -134,7 +134,7 @@ class VSSLiteClient:
                 reader = csv.DictReader(csv_lines)
                 return [dict(r) for r in reader]
 
-    async def aimport_file(self, path: str, body_key: str, namespace: str="default"):
+    async def aimport_file(self, path: str, body_key: str="body", namespace: str="default"):
         records = await self.aload_records_as_json(path)
 
         ret = {"ids": [], "errors": []}

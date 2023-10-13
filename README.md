@@ -51,6 +51,12 @@ vss.delete(1)
 vss.delete_all()
 ```
 
+Import data from file.
+
+```python
+vss.import_file("path/to/data.json")
+```
+
 ## 🧩 REST APIs
 
 ```python
@@ -61,8 +67,40 @@ app = VSSLiteServer(YOUR_API_KEY).app
 uvicorn.run(app, host="127.0.0.1", port=8000)
 ```
 
+Or
+
+```sh
+$ export OPENAI_APIKEY="YOUR_API_KEY"
+$ export DATA_PATH="/path/to/data.db"
+$ python -m vsslite
+```
+
 Go http://127.0.0.1:8000/docs to know the details and try it out.
 
+You can use `VSSLiteClient` to use REST APIs in the same way as with local `VSSLite`.
+
+```python
+vss = VSSLiteClient()
+
+# Search
+vss.add("The difference between eel and conger eel is that eel is more expensive.")
+# Search
+print(vss.search("fish"))
+```
+
+## 🍻 Asynchronous
+
+Use async methods when you use VSSLite in server apps.
+
+```python
+newid = await vss.aadd("~~~")
+upid =await vss.aupdate(1, "~~~")
+r = await vss.aget(1)
+await vss.adelete(1)
+await vss.aupdate_all()
+sr = await vss.asearch("~~~")
+ir = await vss.aimport_file("~~~")
+```
 
 # 🚀 Quick start
 

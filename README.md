@@ -103,7 +103,7 @@ await vss.aupload("~~~")
 ```
 
 
-# 🧇 Namespace
+## 🧇 Namespace
 
 VSSLite supports namespaces for dividing the set of documents to search or update.
 

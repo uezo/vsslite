@@ -1,7 +1,7 @@
 {
     "records": [
-        {"body": "The difference between eel and conger eel is that eel is more expensive.", "data": {"url": "http://eel"}},
-        {"body": "Red pandas are smaller than pandas, but when it comes to cuteness, there is no \"lesser\" about them.", "data": {"url": "http://panda"}},
-        {"body": "There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season.", "data": {"url": "http://ohagi"}}
+        {"body": "The difference between eel and conger eel is that eel is more expensive.", "url": "http://eel"},
+        {"body": "Red pandas are smaller than pandas, but when it comes to cuteness, there is no \"lesser\" about them.", "url": "http://panda"},
+        {"body": "There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season.", "url": "http://ohagi"}
     ]
 }

@@ -4,6 +4,7 @@ from vsslite import VSSLiteClient
 
 API_KEY = os.environ.get("OPENAI_APIKEY")
 
+
 @pytest.mark.asyncio
 async def test_acurd():
     vss = VSSLiteClient()

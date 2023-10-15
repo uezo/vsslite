@@ -1,6 +1,13 @@
-numpy==1.26.0
 openai==0.28.1
-sqlite-vss==0.1.2
 fastapi==0.103.2
 uvicorn==0.23.2
 aiofiles==23.2.1
+
+langchain==0.0.314
+pdfminer.six==20221105
+chromadb==0.4.14
+tiktoken==0.5.1
+jq==1.6.0
+
+numpy==1.26.0
+sqlite-vss==0.1.2

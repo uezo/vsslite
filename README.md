@@ -1,18 +1,47 @@
 # VSSLite
 
-A vector similarity search engine on SQLite.
+A vector similarity search engine for humans🥳
+
+
+# 🎁 Install
+
+```sh
+$ pip install vsslite
+```
+
 
 # ✨ Features
 
-VSSLite provides a simple wrapper features for sqlite-vss.
+VSSLite provides a user-friendly interface for langchain and sqlite-vss.
+
+
+## 🧩 Start API server
+
+```sh
+$ export OPENAI_APIKEY="YOUR_API_KEY"
+$ python -m vsslite
+```
+
+Or
+
+```python
+import uvicorn
+from server import LangChainVSSLiteServer
+
+app = LangChainVSSLiteServer(YOUR_API_KEY).app
+uvicorn.run(app, host="127.0.0.1", port=8000)
+```
+
+Go http://127.0.0.1:8000/docs to know the details and try it out.
+
 
 ## 🔍 Search
 
 ```python
-from vsslite import VSSLite
+from vsslite import LangChainVSSLiteClient
 
 # Initialize
-vss = VSSLite(YOUR_API_KEY)
+vss = LangChainVSSLiteClient()
 
 # Add data with embeddings
 vss.add("The difference between eel and conger eel is that eel is more expensive.")
@@ -20,18 +49,19 @@ vss.add("Red pandas are smaller than pandas, but when it comes to cuteness, ther
 vss.add("There is no difference between \"Ohagi\" and \"Botamochi\" themselves; they are used interchangeably depending on the season.")
 
 # Search
-print(vss.search("fish"))
-print(vss.search("animal"))
-print(vss.search("food"))
+print(vss.search("fish", count=1))
+print(vss.search("animal", count=1))
+print(vss.search("food", count=1))
 ```
 
 Now you can get these search results.
 
 ```bash
 $ python run.py
-[{'id': 1, 'updated_at': '2023-10-09 16:05:50.171643', 'namespace': 'default', 'body': 'The difference between eel and conger eel is that eel is more expensive.', 'data': {}, 'distance': 0.41116979718208313}]
-[{'id': 2, 'updated_at': '2023-10-09 16:05:50.694124', 'namespace': 'default', 'body': 'Red pandas are smaller than pandas, but when it comes to cuteness, there is no "lesser" about them.', 'data': {}, 'distance': 0.4909055233001709}]
-[{'id': 3, 'updated_at': '2023-10-09 16:05:50.942491', 'namespace': 'default', 'body': 'There is no difference between "Ohagi" and "Botamochi" themselves; they are used interchangeably depending on the season.', 'data': {}, 'distance': 0.474251925945282}]
+
+[{'page_content': 'The difference between eel and conger eel is that eel is more expensive.', 'metadata': {'source': 'inline'}}]
+[{'page_content': 'Red pandas are smaller than pandas, but when it comes to cuteness, there is no "lesser" about them.', 'metadata': {'source': 'inline'}}]
+[{'page_content': 'There is no difference between "Ohagi" and "Botamochi" themselves; they are used interchangeably depending on the season.', 'metadata': {'source': 'inline'}}]
 ```
 
 ## 🔧 Data management (Add, Get, Update, Delete)
@@ -40,106 +70,57 @@ Helps CRUD.
 
 ```python
 # Add
-vss.add("The difference between eel and conger eel is that eel is more expensive.")
+id = vss.add("The difference between eel and conger eel is that eel is more expensive.")[0]
 # Get
-vss.get(1)
+vss.get(id)
 # Update
-vss.update(1, "The difference between eel and conger eel is that eel is more expensive. Una-jiro is cheaper than both of them.")
+vss.update(id, "The difference between eel and conger eel is that eel is more expensive. Una-jiro is cheaper than both of them.")
 # Delete
-vss.delete(1)
+vss.delete(id)
 # Delete all
 vss.delete_all()
 ```
 
-Import data from file.
+Upload data. Accept Text, PDF, CSV and JSON for now.
 
 ```python
-vss.import_file("path/to/data.json")
+vss.upload("path/to/data.json")
 ```
 
-## 🧩 REST APIs
-
-```python
-import uvicorn
-from server import VSSLiteServer
-
-app = VSSLiteServer(YOUR_API_KEY).app
-uvicorn.run(app, host="127.0.0.1", port=8000)
-```
-
-Or
-
-```sh
-$ export OPENAI_APIKEY="YOUR_API_KEY"
-$ export DATA_PATH="/path/to/data.db"
-$ python -m vsslite
-```
-
-Go http://127.0.0.1:8000/docs to know the details and try it out.
-
-You can use `VSSLiteClient` to use REST APIs in the same way as with local `VSSLite`.
-
-```python
-vss = VSSLiteClient()
-
-# Search
-vss.add("The difference between eel and conger eel is that eel is more expensive.")
-# Search
-print(vss.search("fish"))
-```
 
 ## 🍻 Asynchronous
 
 Use async methods when you use VSSLite in server apps.
 
 ```python
-newid = await vss.aadd("~~~")
-upid =await vss.aupdate(1, "~~~")
-r = await vss.aget(1)
-await vss.adelete(1)
+await vss.aadd("~~~")
+await vss.aupdate(id, "~~~")
+await vss.aget(id)
+await vss.adelete(id)
 await vss.aupdate_all()
-sr = await vss.asearch("~~~")
-ir = await vss.aimport_file("~~~")
+await vss.asearch("~~~")
+await vss.aupload("~~~")
 ```
 
-# 🚀 Quick start
 
-Copy [Dockerfile](https://github.com/uezo/vsslite/blob/main/Dockerfile) to your current directory and set your OpenAI API key.
+# 🧇 Namespace
 
-```Dockerfile
-ENV API_KEY YOUR_API_KEY
+VSSLite supports namespaces for dividing the set of documents to search or update.
+
+```python
+vss = LangChainVSSLiteClient()
+
+# Search product documents
+vss.search("What is the difference between super size and ultra size?", namespace="product")
+# Search company documents
+vss.search("Who is the CTO of Unagiken?", namespace="company")
 ```
 
-Build container.
 
-```sh
-$ docker build -t vsslite .
-```
+# 🍪 Classic version (based on SQLite)
 
-Run container. This example saves SQLite data to `/path/to/datadir` and listen port 8001 for API.
+See [v0.3.0 README](https://github.com/uezo/vsslite/blob/6cee7e0421b893ed9e16fba0508e025270e2550a/README.md)
 
-```sh
-$ docker run --name vsslite --mount 'type=bind,source=/path/to/datadir,target=/data' -d -p 8001:8000 vsslite:latest
-```
-
-Your VSSLite REST APIs are ready at http://localhost:8001/docs . Enjoy🥳
-
-
-# 🙏 Pre-Requirements
-
-If you install VSSLite on your host machine without docker, Python environment that allows you to use SQLite extentions is required. Use the build option below when you install Python:
-
-```bash
-$ export PYTHON_CONFIGURE_OPTS="--enable-loadable-sqlite-extensions"
-```
-
-# 📦 Install VSSLite
-
-👍
-
-```bash
-$ pip install vsslite
-```
 
 # 🥰 Special thanks
 
@@ -147,3 +128,4 @@ $ pip install vsslite
 - https://note.com/mahlab/n/n5d59b19be573
 - https://qiita.com/Hidetoshi_Kawaguchi/items/f84f7a43d5d1c15a5a17
 - https://zenn.dev/koron/articles/8925963f432361
+

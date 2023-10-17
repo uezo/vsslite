@@ -1,15 +1,35 @@
+import argparse
 import os
-import sys
 import uvicorn
+from vsslite import LangChainVSSLiteServer
 
-args = sys.argv
+apikey = os.getenv("OPENAI_API_KEY")
 
-if len(args) > 1 and args[1] == "sqlite":
+parser = argparse.ArgumentParser(description="VSSLite usage")
+parser.add_argument("--host", type=str, default="127.0.0.1", required=False, help="hostname or ipaddress")
+parser.add_argument("--port", type=int, default="8000", required=False, help="port number")
+parser.add_argument("--apikey", type=str, default=apikey, required=False, help="OpenAI API Key")
+parser.add_argument("--dir", type=str, default="./vectorstore", required=False, help="Data persist directory")
+parser.add_argument("--chunksize", type=int, default=500, required=False, help="Chunk size")
+parser.add_argument("--chunkoverlap", type=int, default=0, required=False, help="Chunk overlap")
+parser.add_argument("--vectorstore", type=str, default="chromadb", required=False, help="Chunk overlap")
+args = parser.parse_args()
+
+
+if args.vectorstore == "sqlite":
     from vsslite import VSSLiteServer
-    vss = VSSLiteServer(os.getenv("OPENAI_APIKEY"), os.getenv("DATA_PATH"))
+    vss = VSSLiteServer(
+        openai_apikey=args.apikey,
+        connection_str=args.dir
+    )
 
 else:
     from vsslite import LangChainVSSLiteServer
-    vss = LangChainVSSLiteServer(os.getenv("OPENAI_APIKEY"))
+    vss = LangChainVSSLiteServer(
+        apikey=args.apikey,
+        persist_directory=args.dir,
+        chunk_size=args.chunksize,
+        chunk_overlap=args.chunkoverlap
+    )
 
-uvicorn.run(vss.app, host="0.0.0.0", port=8000)
+uvicorn.run(vss.app, host=args.host, port=args.port)

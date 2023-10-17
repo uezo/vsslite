@@ -1,3 +1,9 @@
+import sys
+if sys.platform.startswith("linux"):
+    # ChromaDB requirement
+    __import__("pysqlite3")
+    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+
 import argparse
 import os
 import uvicorn

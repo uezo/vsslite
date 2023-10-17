@@ -130,58 +130,28 @@ $ pip install streamlit-chat
 
 ## Make a script
 
-This is an example for OpenAI terms of use. Save as `runui.py`.
+This is an example for OpenAI terms of use (upload terms of use to VSSServer with namespace `openai`).
+Save this script as `runui.py`.
 
 ```python
 import asyncio
-from vsslite import LangChainVSSLiteClient
 from vsslite.chat import (
     ChatUI,
-    ChatGPTFunctionBase,
-    ChatGPTFunctionResponse
+    VSSQAFunction
 )
 
-class OpenAIQAFunction(ChatGPTFunctionBase):
-    name="get_openai_terms_of_use"
-    description="Get information about terms of use of OpenAI services including ChatGPT."
-    parameters={"type": "object", "properties": {}}
+# Setup QA function
+openai_qa_func = VSSQAFunction(
+    name="get_openai_terms_of_use",
+    description="Get information about terms of use of OpenAI services including ChatGPT.",
+    parameters={"type": "object", "properties": {}},
+    namespace="openai",
+    # answer_lang="Japanese",  # <- Uncomment if you want to get answer in Japanese
+    verbose=True
+)
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.vss = LangChainVSSLiteClient()
-
-    async def aexecute(self, question_text: str, **kwargs) -> ChatGPTFunctionResponse:
-        qprompt = """
-Please respond to user questions based on the following conditions.
-
-## Conditions
-
-* The 'information to be based on' below is OpenAI's terms of service. Please create responses based on this content.
-* While multiple pieces of information are provided, you do not need to use all of them. Use one or two that you consider most important.
-* When providing your response, quote and present the part you referred to, which is highly important for the user.
-* Please respond **in Japanese**, regardless of the language of the reference material.
-* The response format should be as follows:
-
-----
-{Response}
-
-Quotation: {Relevant part of the information to be based on}
-----
-
-## Information to be based on
-
-"""
-        sr = await self.vss.asearch(question_text, namespace="openai")
-        for d in sr:
-            qprompt += d["page_content"] + "\n\n------------\n\n"
-        
-        # See the generated prompt
-        print(qprompt)
-
-        return ChatGPTFunctionResponse(qprompt, "user")
-
-
-chatui = ChatUI(YOUR_API_KEY, temperature=0.5, functions=[OpenAIQAFunction()])
+# Start app
+chatui = ChatUI(temperature=0.5, functions=[openai_qa_func])
 asyncio.run(chatui.start())
 ```
 

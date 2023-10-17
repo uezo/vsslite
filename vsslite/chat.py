@@ -6,6 +6,7 @@ from typing import Iterator, List
 
 import streamlit as st
 from openai import ChatCompletion
+from vsslite import LangChainVSSLiteClient
 
 
 logger = getLogger(__name__)
@@ -31,6 +32,49 @@ class ChatGPTFunctionBase:
 
     async def aexecute(self, request_text: str, **kwargs) -> ChatGPTFunctionResponse:
         pass
+
+
+class VSSQAFunction(ChatGPTFunctionBase):
+    def __init__(self, name: str, description: str, parameters: dict = None, prompt_template: str = None, vss_url: str = "http://127.0.0.1:8000", namespace: str = "default", answer_lang: str = "English", verbose: bool = False) -> None:
+        super().__init__()
+        self.name = name
+        self.description = description
+        self.parameters = parameters or {"type": "object", "properties": {}}
+        self.prompt_template = prompt_template or """Please respond to user questions based on the following conditions.
+
+## Conditions
+
+* The 'information to be based on' below is OpenAI's terms of service. Please create responses based on this content.
+* While multiple pieces of information are provided, you do not need to use all of them. Use one or two that you consider most important.
+* When providing your response, quote and present the part you referred to, which is highly important for the user.
+* The response format should be as follows:
+
+```
+{Response}
+
+Quotation: {Relevant part of the information to be based on}
+```
+
+## Information to be based on
+
+"""
+        self.namespace = namespace
+        self.answer_lang = answer_lang
+        self.verbose = verbose
+        self.vss = LangChainVSSLiteClient(vss_url)
+
+    async def aexecute(self, question_text: str, **kwargs) -> ChatGPTFunctionResponse:
+        qprompt = self.prompt_template
+        sr = await self.vss.asearch(question_text, namespace=self.namespace)
+        for d in sr:
+            qprompt += d["page_content"] + "\n\n------------\n\n"
+        
+        qprompt += f"* Please respond **in {self.answer_lang}**, regardless of the language of the reference material."
+
+        if self.verbose:
+            logger.info(f"Prompt: {qprompt}")
+
+        return ChatGPTFunctionResponse(qprompt, "user")
 
 
 class ChatCompletionStreamResponse:

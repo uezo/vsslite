@@ -1,6 +1,13 @@
-import sys
-if sys.platform.startswith("linux"):
-    # ChromaDB requirement
+# Check SQLite version to satisfy ChromaDB requirements
+import sqlite3
+if sqlite3.sqlite_version_info < (3, 35, 0):
+    import subprocess
+    import sys
+    print("Start installing additional dependencies for ChromaDB ...")
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", "pysqlite3-binary"]
+    )
+    print("Done!")
     __import__("pysqlite3")
     sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 

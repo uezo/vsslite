@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="vsslite",
-    version="0.5.1",
+    version="0.5.2",
     url="https://github.com/uezo/vsslite",
     author="uezo",
     author_email="uezo@uezo.net",

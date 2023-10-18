@@ -1,0 +1,29 @@
+version: "3"
+services:
+  vsslite-api:
+    container_name: vsslite-api
+    env_file:
+      - vsslite.env
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    ports:
+      - ${API_PORT}:8000
+    volumes:
+      - ${PWD}/vectorstore:/app/vectorstore
+
+  vsslite-chat:
+    container_name: vsslite-chat
+    env_file:
+      - vsslite.env
+    build:
+      context: .
+      dockerfile: Dockerfile.chat
+    command: streamlit run chat.py --server.address=0.0.0.0 --server.port=8000
+    ports:
+      - ${CHAT_PORT}:8000
+    depends_on:
+      - vsslite-api
+
+# docker-compose -p vsslite --env-file vsslite.env up -d --build

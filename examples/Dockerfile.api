@@ -1,0 +1,19 @@
+FROM python:3.10.6-slim-bullseye
+
+RUN apt-get update
+
+RUN mkdir -p /app
+COPY api.py /app
+WORKDIR /app
+
+RUN pip install --upgrade pip
+RUN pip install pysqlite3-binary
+RUN pip install vsslite
+
+ENV OPENAI_API_KEY $OPENAI_API_KEY
+
+EXPOSE 8000
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# docker build -t vsslite-api -f Dockerfile.api .
+# docker run --name vsslite-api --mount type=bind,source="$(pwd)"/vectorstore,target=/app/vectorstore -d -p 8000:8000 -e OPENAI_API_KEY=$OPENAI_API_KEY vsslite-api:latest

@@ -164,6 +164,27 @@ $ streamlit run runui.py
 See https://docs.streamlit.io to know more about Streamlit.
 
 
+# 🐳 Docker
+
+If you want to start VSSLite API with chat console, use `docker-compose.yml` in examples.
+
+Set your OpenAI API Key in vsslite.env and execute the command below:
+
+```sh
+$ docker-compose -p vsslite --env-file vsslite.env up -d --build
+```
+
+Or, use Dockerfile to start each service separately.
+
+```sh
+$ docker build -t vsslite-api -f Dockerfile.api .
+$ docker run --name vsslite-api --mount type=bind,source="$(pwd)"/vectorstore,target=/app/vectorstore -d -p 8000:8000 -e OPENAI_API_KEY=$OPENAI_API_KEY vsslite-api:latest
+```
+```sh
+$ docker build -t vsslite-chat -f Dockerfile.chat .
+$ docker run --name vsslite-chat -d -p 8001:8000 -e OPENAI_API_KEY=$OPENAI_API_KEY vsslite-chat:latest
+```
+
 
 # 🍪 Classic version (based on SQLite)
 

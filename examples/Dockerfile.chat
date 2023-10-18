@@ -1,0 +1,19 @@
+FROM python:3.10.6-slim-bullseye
+
+RUN apt-get update
+
+RUN mkdir -p /app
+COPY chat.py /app
+WORKDIR /app
+
+RUN pip install --upgrade pip
+RUN pip install streamlit streamlit-chat
+RUN pip install vsslite
+
+ENV OPENAI_API_KEY $OPENAI_API_KEY
+
+EXPOSE 8000
+CMD ["streamlit", "run", "chat.py", "--server.address=0.0.0.0", "--server.port=8000"]
+
+# docker build -t vsslite-chat -f Dockerfile.chat .
+# docker run --name vsslite-chat -d -p 8001:8000 -e OPENAI_API_KEY=$OPENAI_API_KEY vsslite-chat:latest

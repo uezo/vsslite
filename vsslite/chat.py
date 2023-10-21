@@ -90,9 +90,13 @@ class ChatCompletionStreamResponse:
 
 
 class ChatGPTProcessor:
-    def __init__(self, api_key: str=None, model: str="gpt-3.5-turbo-16k-0613", temperature: float=1.0, max_tokens: int=0, functions: dict=None, system_message_content: str=None):
+    def __init__(self, *, api_key: str=None, api_base: str=None, api_type: str=None, api_version: str=None, model: str="gpt-3.5-turbo-16k-0613", engine: str=None, temperature: float=1.0, max_tokens: int=0, functions: dict=None, system_message_content: str=None):
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
+        self.api_base = api_base
+        self.api_type = api_type
+        self.api_version = api_version
         self.model = model
+        self.engine = engine
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.functions = functions or {}
@@ -108,6 +112,12 @@ class ChatGPTProcessor:
             "temperature": self.temperature if temperature is None else temperature,
             "stream": True,
         }
+        if self.api_type == "azure":
+            params["api_base"] = self.api_base
+            params["api_type"] = self.api_type
+            params["api_version"] = self.api_version
+            params["engine"] = self.engine
+
         if self.max_tokens:
             params["max_tokens"] = self.max_tokens
 
@@ -124,10 +134,11 @@ class ChatGPTProcessor:
 
         async for chunk in stream_resp.stream:
             if chunk:
-                delta = chunk["choices"][0]["delta"]
-                if delta.get("function_call"):
-                    stream_resp.function_name = delta["function_call"]["name"]
-                break
+                if len(chunk["choices"]) > 0:
+                    delta = chunk["choices"][0]["delta"]
+                    if delta.get("function_call"):
+                        stream_resp.function_name = delta["function_call"]["name"]
+                    break
         
         return stream_resp
 
@@ -195,13 +206,23 @@ class ChatGPTProcessor:
 
 class ChatUI:
     def __init__(
-        self, apikey: str = None, model: str="gpt-3.5-turbo-16k-0613",
+        self, *, apikey: str = None,
+        api_base: str=None,
+        api_type: str="azure",
+        api_version: str=None,
+        model: str="gpt-3.5-turbo-16k-0613",
+        engine: str=None,
         temperature: float=1.0, max_tokens: int=0, 
         functions: List[ChatGPTFunctionBase] = None,
         system_message_content: str=None,
         title: str = None, input_prompt: str = None
     ) -> None:
         self.apikey = apikey or os.environ.get("OPENAI_API_KEY")
+        self.api_base = api_base
+        self.api_type = api_type
+        self.api_version = api_version
+        self.model = model
+        self.engine = engine
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -212,8 +233,12 @@ class ChatUI:
 
     def create_processor(self):
         return  ChatGPTProcessor(
-            self.apikey,
+            api_key=self.apikey,
+            api_base=self.api_base,
+            api_type=self.api_type,
+            api_version=self.api_version,
             model=self.model,
+            engine=self.engine,
             temperature=self.temperature,
             max_tokens=self.max_tokens,
             functions={

@@ -29,11 +29,22 @@ logger.addHandler(streamHandler)
 
 # Configure app
 from vsslite import LangChainVSSLiteServer
+
+# To use Azure OpenAI Service uncomment and configure below
+# from langchain.embeddings import OpenAIEmbeddings
+# azure_embeddings = OpenAIEmbeddings(
+#     openai_api_type="azure",
+#     openai_api_base="https://your-endpoint.openai.azure.com/",
+#     openai_api_version="2023-08-01-preview",
+#     deployment="your-embeddings-deployment-name"
+# )
+
 app = LangChainVSSLiteServer(
     apikey=YOUR_API_KEY or os.getenv("OPENAI_API_KEY"),
     persist_directory="./vectorstore",
     chunk_size=500,
-    chunk_overlap=0
+    chunk_overlap=0,
+    # embedding_function=azure_embeddings   # <- Uncomment to use Azure OpenAI Service
 ).app
 
 # Invoke app (single process)

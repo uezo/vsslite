@@ -186,6 +186,51 @@ $ docker build -t vsslite-chat -f Dockerfile.chat .
 $ docker run --name vsslite-chat -d -p 8001:8000 -e OPENAI_API_KEY=$OPENAI_API_KEY vsslite-chat:latest
 ```
 
+# 🌊 Using Azure OpenAI Service
+
+VSSLite supports Azure OpenAI Service👍
+
+## API Server
+
+Use `OpenAIEmbeddings` configured for Azure.
+
+```python
+from langchain.embeddings import OpenAIEmbeddings
+azure_embeddings = OpenAIEmbeddings(
+    openai_api_type="azure",
+    openai_api_base="https://your-endpoint.openai.azure.com/",
+    openai_api_version="2023-08-01-preview",
+    deployment="your-embeddings-deployment-name"
+)
+
+app = LangChainVSSLiteServer(
+    apikey=YOUR_API_KEY or os.getenv("OPENAI_API_KEY"),
+    persist_directory="./vectorstore",
+    chunk_size=500,
+    chunk_overlap=0,
+    embedding_function=azure_embeddings
+).app
+```
+
+## Chat UI
+
+Create `ChatUI` with Azure OpenAI Service configurations.
+
+```python
+chatui = ChatUI(
+    apikey=YOUR_API_KEY or os.getenv("OPENAI_API_KEY"),
+    temperature=0.5,
+    functions=[openai_qa_func],
+    # Config for Azure OpenAI Service
+    api_type="azure",
+    api_base="https://your-endpoint.openai.azure.com/",
+    api_version="2023-08-01-preview",
+    engine="your-embeddings-deployment-name"
+)
+```
+
+See also the [examples](https://github.com/uezo/vsslite/tree/main/examples).
+
 
 # 🍪 Classic version (based on SQLite)
 

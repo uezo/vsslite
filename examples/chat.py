@@ -32,7 +32,12 @@ openai_qa_func = VSSQAFunction(
 chatui = ChatUI(
     apikey=YOUR_API_KEY or os.getenv("OPENAI_API_KEY"),
     temperature=0.5,
-    functions=[openai_qa_func]
+    functions=[openai_qa_func],
+    # To use Azure OpenAI Service uncomment and configure below
+    # api_type="azure",
+    # api_base="https://your-endpoint.openai.azure.com/",
+    # api_version="2023-08-01-preview",
+    # engine="your-embeddings-deployment-name"
 )
 asyncio.run(chatui.start())
 

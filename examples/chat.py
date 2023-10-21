@@ -10,11 +10,12 @@ YOUR_API_KEY = ""
 
 # Setup logger
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-log_format = logging.Formatter("%(asctime)s %(levelname)8s %(message)s")
-streamHandler = logging.StreamHandler()
-streamHandler.setFormatter(log_format)
-logger.addHandler(streamHandler)
+if logger.hasHandlers():
+    logger.setLevel(logging.INFO)
+    log_format = logging.Formatter("%(asctime)s %(levelname)8s %(message)s")
+    streamHandler = logging.StreamHandler()
+    streamHandler.setFormatter(log_format)
+    logger.addHandler(streamHandler)
 
 # Setup QA function(s)
 openai_qa_func = VSSQAFunction(

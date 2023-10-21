@@ -22,6 +22,7 @@ class ChatGPTFunctionBase:
     name = None
     description = None
     parameters = {"type": "object", "properties": {}}
+    is_always_on = False
     
     def get_spec(self):
         return {
@@ -35,11 +36,12 @@ class ChatGPTFunctionBase:
 
 
 class VSSQAFunction(ChatGPTFunctionBase):
-    def __init__(self, name: str, description: str, parameters: dict = None, prompt_template: str = None, vss_url: str = "http://127.0.0.1:8000", namespace: str = "default", answer_lang: str = "English", verbose: bool = False) -> None:
+    def __init__(self, name: str, description: str, parameters: dict = None, is_always_on: bool = False, prompt_template: str = None, vss_url: str = "http://127.0.0.1:8000", namespace: str = "default", answer_lang: str = "English", verbose: bool = False) -> None:
         super().__init__()
         self.name = name
         self.description = description
         self.parameters = parameters or {"type": "object", "properties": {}}
+        self.is_always_on = is_always_on
         self.prompt_template = prompt_template or """Please respond to user questions based on the following conditions.
 
 ## Conditions
@@ -110,7 +112,13 @@ class ChatGPTProcessor:
             params["max_tokens"] = self.max_tokens
 
         if call_functions and self.functions:
-            params["functions"] = [v.get_spec() for _, v in self.functions.items()]
+            params["functions"] = []
+            for _, v in self.functions.items():
+                params["functions"].append(v.get_spec())
+                if v.is_always_on:
+                    params["function_call"] = {"name": v.name}
+                    logger.info(f"Function Calling is always on: {v.name}")
+                    break
 
         stream_resp = ChatCompletionStreamResponse(await ChatCompletion.acreate(**params))
 

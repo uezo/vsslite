@@ -24,6 +24,7 @@ openai_qa_func = VSSQAFunction(
     vss_url=os.getenv("VSS_URL") or "http://127.0.0.1:8000",
     namespace="openai",
     # answer_lang="Japanese",  # <- Uncomment if you want to get answer in Japanese
+    # is_always_on=True,  # <- Uncomment if you want to always fire this function
     verbose=True
 )
 

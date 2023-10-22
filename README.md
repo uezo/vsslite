@@ -117,7 +117,7 @@ vss.search("Who is the CTO of Unagiken?", namespace="company")
 ```
 
 
-# 💬 Web UI
+# 🌐 Web UI
 
 You can quickly launch a Q&A web service based on documents 🚅
 
@@ -163,6 +163,57 @@ $ streamlit run runui.py
 ```
 
 See https://docs.streamlit.io to know more about Streamlit.
+
+
+
+# 💬 LINE Bot
+
+You can quickly launch a LINE Bot based on documents 🛫
+
+## Install dependency
+
+```sh
+$ pip install aiohttp line-bot-sdk
+```
+
+## Make a script
+
+This is an example for OpenAI terms of use (upload terms of use to VSSServer with namespace `openai`).
+Save this script as `line.py`.
+
+```python
+import os
+from vsslite.chatgpt_processor import VSSQAFunction
+from vsslite.line import LineBotServer
+
+# Setup QA function(s)
+from vsslite.chatgpt_processor import VSSQAFunction
+openai_qa_func = VSSQAFunction(
+    name="get_openai_terms_of_use",
+    description="Get information about terms of use of OpenAI services including ChatGPT.",
+    parameters={"type": "object", "properties": {}},
+    vss_url=os.getenv("VSS_URL") or "http://127.0.0.1:8000",
+    namespace="openai",
+    # answer_lang="Japanese",  # <- Uncomment if you want to get answer in Japanese
+    # is_always_on=True,  # <- Uncomment if you want to always fire this function
+    verbose=True
+)
+
+app = LineBotServer(
+    channel_access_token=YOUR_CHANNEL_ACCESS_TOKEN,
+    channel_secret=YOUR_CHANNEL_SECRET,
+    endpoint_path="/linebot",   # <- Set "https://your_domain/linebot" to webhook url at LINE Developers
+    functions=[openai_qa_func]
+).app
+```
+
+## Start LINE Bot Webhook Server
+
+```sh
+$ uvicorn line:app --host 0.0.0.0 --port 8002
+```
+
+Set `https://your_domain/linebot`` to webhook url at LINE Developers.
 
 
 # 🐳 Docker

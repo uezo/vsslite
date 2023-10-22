@@ -1,10 +1,8 @@
 import asyncio
 import logging
 import os
-from vsslite.chat import (
-    ChatUI,
-    VSSQAFunction
-)
+from vsslite.chat import ChatUI
+from vsslite.chatgpt_processor import VSSQAFunction
 
 YOUR_API_KEY = ""
 

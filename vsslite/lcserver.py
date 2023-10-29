@@ -80,9 +80,12 @@ class LangChainVSSLiteServer:
             )
 
         @app.get("/search/{namespace}", response_model=SearchResponse, tags=["Search"])
-        async def search_document(q: str, count: int = 4, namespace: str = "default"):
+        async def search_document(q: str, count: int = 4, namespace: str = "default", score_threshold: float = 0.0):
             try:
-                retriever = get_vector_store(namespace).as_retriever(search_kwargs={"k": count})
+                retriever = get_vector_store(namespace).as_retriever(
+                    search_type="similarity_score_threshold",
+                    search_kwargs={"k": count, "score_threshold": score_threshold}
+                )
                 results = []
                 for d in await retriever.aget_relevant_documents(query=q):
                     results.append(

@@ -41,6 +41,8 @@ async def test_acurd():
     assert s2[0]["page_content"] == r5["documents"][0]["page_content"]
     s3 = await vss.asearch("food")
     assert s3[0]["page_content"] == r6["documents"][0]["page_content"]
+    s4 = await vss.asearch("fish", score_threshold=1.0)
+    assert len(s4) == 0
 
     # delete
     await vss.adelete(id1)

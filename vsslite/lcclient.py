@@ -30,12 +30,12 @@ class LangChainVSSLiteClient:
     def sync(self, future):
         return asyncio.get_event_loop().run_until_complete(future)
 
-    async def asearch(self, query: str, count: int = 4, namespace: str = "default") -> List[dict]:
+    async def asearch(self, query: str, count: int = 4, namespace: str = "default", score_threshold: float = 0.0) -> List[dict]:
         try:
             async with aiohttp.ClientSession(raise_for_status=True) as client_session:
                 async with client_session.get(
                     self.base_url + f"/search/{namespace}",
-                    params={"q": query, "count": count},
+                    params={"q": query, "count": count, "score_threshold": score_threshold},
                     timeout=self.timeout
                 ) as resp:
                     return (await resp.json())["results"]

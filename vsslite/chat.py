@@ -37,7 +37,7 @@ class ChatUI:
         self.max_tokens = max_tokens
         self.functions = functions or []
         self.system_message_content = system_message_content
-        self.title = title or "VSSLite Chat v0.4.0"
+        self.title = title or "VSSLite Chat v0.6.1"
         self.input_prompt = input_prompt or "Send a message"
 
     def create_processor(self):

@@ -67,7 +67,7 @@ class LangChainVSSLiteServer:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
 
-        self.app = FastAPI(**(server_args or {"title": "VSSLite API", "version": "0.4.0"}))
+        self.app = FastAPI(**(server_args or {"title": "VSSLite API", "version": "0.6.1"}))
         self.setup_handlers()
 
     def setup_handlers(self):

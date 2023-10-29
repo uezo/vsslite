@@ -59,7 +59,7 @@ class VSSLiteServer:
             connection_str=connection_str
         )
         self.vssengine.create_tables()
-        self.app = FastAPI(**(server_args or {"title": "VSSLite Classic API", "version": "0.4.0"}))
+        self.app = FastAPI(**(server_args or {"title": "VSSLite Classic API", "version": "0.6.1"}))
         self.setup_handlers()
 
     def setup_handlers(self):

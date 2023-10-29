@@ -12,9 +12,10 @@ logger = getLogger(__name__)
 
 
 class ChatGPTFunctionResponse:
-    def __init__(self, content: str, role: str = "function"):
+    def __init__(self, content: str, role: str = "function", trailing_content: str = None):
         self.content = content
         self.role = role
+        self.trailing_content = trailing_content
 
 
 class ChatGPTFunctionBase:
@@ -29,6 +30,9 @@ class ChatGPTFunctionBase:
             "description": self.description,
             "parameters": self.parameters
         }
+
+    def make_trailing_content(self, data: dict = None) -> str:
+        pass
 
     async def aexecute(self, request_text: str, **kwargs) -> ChatGPTFunctionResponse:
         pass
@@ -64,18 +68,29 @@ Quotation: {Relevant part of the information to be based on}
         self.verbose = verbose
         self.vss = LangChainVSSLiteClient(vss_url)
 
+    def make_trailing_content(self, data: dict = None) -> str:
+        trailing_content = ""
+
+        for d in data["search_results"]:
+            if "image_url" in d["metadata"]:
+                trailing_content += f"![image]({d['metadata']['image_url']})\n"
+
+        return trailing_content
+
     async def aexecute(self, question_text: str, **kwargs) -> ChatGPTFunctionResponse:
         qprompt = self.prompt_template
         sr = await self.vss.asearch(question_text, namespace=self.namespace)
         for d in sr:
             qprompt += d["page_content"] + "\n\n------------\n\n"
-        
+
         qprompt += f"* Please respond **in {self.answer_lang}**, regardless of the language of the reference material."
+
+        trailing_content = self.make_trailing_content({"search_results": sr})
 
         if self.verbose:
             logger.info(f"Prompt: {qprompt}")
 
-        return ChatGPTFunctionResponse(qprompt, "user")
+        return ChatGPTFunctionResponse(qprompt, "user", trailing_content=trailing_content)
 
 
 class ChatCompletionStreamResponse:
@@ -204,6 +219,9 @@ class ChatGPTProcessor:
                     if content:
                         response_text += content
                         yield content
+                
+                if function_resp.trailing_content:
+                    yield f"\n\n{function_resp.trailing_content}"
 
             if response_text:
                 self.histories.append(messages[-1])

@@ -25,8 +25,14 @@ async def test_chat_with_func():
         parameters = {"type": "object", "properties": {"location": {"type": "string"}}}
         is_always_on = False
 
+        def make_trailing_content(self, data: dict = None) -> str:
+            return "trailing_content"
+
         async def aexecute(self, request_text: str, **kwargs) -> ChatGPTFunctionResponse:
-            return ChatGPTFunctionResponse(json.dumps({"weather": "晴れ", "temperature": 30}))
+            return ChatGPTFunctionResponse(
+                json.dumps({"weather": "晴れ", "temperature": 30}),
+                trailing_content=self.make_trailing_content()
+            )
     
     chat_processor = ChatGPTProcessor(functions={"get_weather": WeatherFunc()})
 
@@ -36,3 +42,4 @@ async def test_chat_with_func():
     
     assert "晴" in response_text
     assert "30" in response_text
+    assert response_text.endswith("trailing_content")

@@ -45,23 +45,29 @@ class VSSQAFunction(ChatGPTFunctionBase):
         self.description = description
         self.parameters = parameters or {"type": "object", "properties": {}}
         self.is_always_on = is_always_on
-        self.prompt_template = prompt_template or """Please respond to user questions based on the following conditions.
+        self.prompt_template = prompt_template or """Question: {question_text}
+        
+Please answer the question based on the following conditions.
 
 ## Conditions
 
-* The 'information to be based on' below is OpenAI's terms of service. Please create responses based on this content.
+* The 'information to be based on' below is OpenAI's terms of service. Please create answer based on this content.
 * While multiple pieces of information are provided, you do not need to use all of them. Use one or two that you consider most important.
-* When providing your response, quote and present the part you referred to, which is highly important for the user.
-* The response format should be as follows:
+* When providing your answer, quote and present the part you referred to, which is highly important for the user.
+* The format should be as follows:
 
 ```
-{Response}
+{{Answer}}
 
-Quotation: {Relevant part of the information to be based on}
+Quotation: {{Relevant part of the information to be based on}}
 ```
 
 ## Information to be based on
 
+{search_results_text}
+
+* If the information above doesn't contains the answer, reply that you cannot provide the answer because the necessary information is not found.
+* Please respond **in {answer_lang}**, regardless of the language of the reference material.
 """
         self.namespace = namespace
         self.answer_lang = answer_lang
@@ -78,12 +84,16 @@ Quotation: {Relevant part of the information to be based on}
         return trailing_content
 
     async def aexecute(self, question_text: str, **kwargs) -> ChatGPTFunctionResponse:
-        qprompt = self.prompt_template
+        search_results_text = ""
         sr = await self.vss.asearch(question_text, namespace=self.namespace)
         for d in sr:
-            qprompt += d["page_content"] + "\n\n------------\n\n"
+            search_results_text += d["page_content"] + "\n\n------------\n\n"
 
-        qprompt += f"* Please respond **in {self.answer_lang}**, regardless of the language of the reference material."
+        qprompt = self.prompt_template.format(
+            question_text=question_text,
+            search_results_text=search_results_text,
+            answer_lang=self.answer_lang
+        )
 
         trailing_content = self.make_trailing_content({"search_results": sr})
 
